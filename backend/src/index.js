@@ -2,8 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import pool from './config/database.js';
+import { startEmailSyncCron } from './services/CronService.js';
 
-// Import routes (we'll create these next)
+// Import routes
 import authRoutes from './routes/auth.js';
 import applicationRoutes from './routes/applications.js';
 import emailRoutes from './routes/email.js';
@@ -77,6 +78,9 @@ app.listen(PORT, () => {
 ║   URL: http://localhost:${PORT}${' '.repeat(20)}║
 ╚════════════════════════════════════════════╝
   `);
+
+  // Start email sync cron job
+  startEmailSyncCron();
 });
 
 // Graceful shutdown
