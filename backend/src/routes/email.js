@@ -182,7 +182,45 @@ router.post('/sync', async (req, res) => {
   }
 });
 
-// Placeholder for disconnect
+// Get raw emails (for debugging/testing)
+router.get('/emails', async (req, res) => {
+  try {
+    const result = await query(
+      `SELECT id, subject, sender_email, sender_name, received_date, processed, processing_error
+       FROM raw_emails
+       WHERE user_id = $1
+       ORDER BY received_date DESC
+       LIMIT 50`,
+      [req.user.userId]
+    );
+
+    res.json({
+      emails: result.rows,
+      count: result.rows.length
+    });
+  } catch (error) {
+    console.error('Get emails error:', error);
+    res.status(500).json({ error: 'Failed to get emails' });
+  }
+});
+
+// Process unprocessed emails (AI parsing)
+router.post('/process', async (req, res) => {
+  try {
+    const { processUnprocessedEmails } = await import('../services/EmailProcessingService.js');
+    const result = await processUnprocessedEmails(req.user.userId);
+
+    res.json({
+      message: 'Email processing completed',
+      ...result
+    });
+  } catch (error) {
+    console.error('Process emails error:', error);
+    res.status(500).json({ error: 'Failed to process emails' });
+  }
+});
+
+// Disconnect Gmail
 router.delete('/disconnect', async (req, res) => {
   try {
     await query('DELETE FROM email_connections WHERE user_id = $1', [req.user.userId]);
