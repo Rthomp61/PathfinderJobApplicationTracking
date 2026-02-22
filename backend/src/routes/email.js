@@ -10,7 +10,77 @@ import {
 
 const router = express.Router();
 
-// All routes require authentication
+// OAuth callback doesn't require auth (comes from Google)
+// Step 2: OAuth callback - exchange code for tokens
+router.get('/callback', async (req, res) => {
+  try {
+    const { code, state } = req.query;
+
+    if (!code) {
+      return res.status(400).send('Authorization code missing');
+    }
+
+    // Decode state to get userId
+    const stateData = JSON.parse(Buffer.from(state, 'base64').toString('utf-8'));
+    const userId = stateData.userId;
+
+    // Exchange code for tokens
+    const tokens = await getTokensFromCode(code);
+
+    if (!tokens.refresh_token) {
+      return res.status(400).send('No refresh token received. Please revoke access in your Google account and try again.');
+    }
+
+    // Get user's email address
+    const emailAddress = await getUserEmail(tokens);
+
+    // Calculate token expiry
+    const expiryDate = new Date(Date.now() + tokens.expiry_date);
+
+    // Store tokens in database
+    await query(
+      `INSERT INTO email_connections
+       (user_id, email_address, provider, access_token, refresh_token, token_expiry, last_sync)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW())
+       ON CONFLICT (user_id)
+       DO UPDATE SET
+         email_address = $2,
+         access_token = $4,
+         refresh_token = $5,
+         token_expiry = $6,
+         last_sync = NOW(),
+         sync_enabled = true`,
+      [userId, emailAddress, 'gmail', tokens.access_token, tokens.refresh_token, expiryDate]
+    );
+
+    // Show success message (frontend doesn't exist yet)
+    res.send(`
+      <html>
+        <head><title>Gmail Connected</title></head>
+        <body style="font-family: Arial; padding: 40px; text-align: center;">
+          <h1 style="color: green;">✅ Gmail Connected Successfully!</h1>
+          <p>Email: <strong>${emailAddress}</strong></p>
+          <p>You can close this window and return to your application.</p>
+          <p style="color: #666; margin-top: 40px;">Emails will now sync automatically every 15 minutes.</p>
+        </body>
+      </html>
+    `);
+  } catch (error) {
+    console.error('OAuth callback error:', error);
+    res.status(500).send(`
+      <html>
+        <head><title>Connection Error</title></head>
+        <body style="font-family: Arial; padding: 40px; text-align: center;">
+          <h1 style="color: red;">❌ Connection Failed</h1>
+          <p>Error: ${error.message}</p>
+          <p>Please try again.</p>
+        </body>
+      </html>
+    `);
+  }
+});
+
+// All other routes require authentication
 router.use(authenticateToken);
 
 // Get email connection status
@@ -62,58 +132,6 @@ router.get('/connect', async (req, res) => {
   } catch (error) {
     console.error('Connect error:', error);
     res.status(500).json({ error: 'Failed to initiate Gmail connection' });
-  }
-});
-
-// Step 2: OAuth callback - exchange code for tokens
-router.get('/callback', async (req, res) => {
-  try {
-    const { code, state } = req.query;
-
-    if (!code) {
-      return res.status(400).json({ error: 'Authorization code missing' });
-    }
-
-    // Decode state to get userId
-    const stateData = JSON.parse(Buffer.from(state, 'base64').toString('utf-8'));
-    const userId = stateData.userId;
-
-    // Exchange code for tokens
-    const tokens = await getTokensFromCode(code);
-
-    if (!tokens.refresh_token) {
-      return res.status(400).json({
-        error: 'No refresh token received. Please revoke access and try again.'
-      });
-    }
-
-    // Get user's email address
-    const emailAddress = await getUserEmail(tokens);
-
-    // Calculate token expiry
-    const expiryDate = new Date(Date.now() + tokens.expiry_date);
-
-    // Store tokens in database
-    await query(
-      `INSERT INTO email_connections
-       (user_id, email_address, provider, access_token, refresh_token, token_expiry, last_sync)
-       VALUES ($1, $2, $3, $4, $5, $6, NOW())
-       ON CONFLICT (user_id)
-       DO UPDATE SET
-         email_address = $2,
-         access_token = $4,
-         refresh_token = $5,
-         token_expiry = $6,
-         last_sync = NOW(),
-         sync_enabled = true`,
-      [userId, emailAddress, 'gmail', tokens.access_token, tokens.refresh_token, expiryDate]
-    );
-
-    // Redirect to frontend success page
-    res.redirect(`${process.env.FRONTEND_URL}/settings?gmail=connected`);
-  } catch (error) {
-    console.error('OAuth callback error:', error);
-    res.redirect(`${process.env.FRONTEND_URL}/settings?gmail=error`);
   }
 });
 
