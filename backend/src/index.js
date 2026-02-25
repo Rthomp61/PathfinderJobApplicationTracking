@@ -17,11 +17,16 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
-  origin: [
-    process.env.FRONTEND_URL || 'http://localhost:5173',
-    'http://localhost:3002',
-    'http://localhost:8080'
-  ],
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, or bookmarklets)
+    // Also allow localhost origins for development
+    if (!origin || origin.includes('localhost')) {
+      return callback(null, true);
+    }
+    // Allow requests from any origin for the bookmarklet to work
+    // In production, you might want to restrict this to specific domains
+    callback(null, true);
+  },
   credentials: true
 }));
 
