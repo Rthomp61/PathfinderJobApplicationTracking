@@ -80,8 +80,13 @@ function loadStudentData() {
 
 // Dashboard Data
 async function loadDashboardData() {
+    // Don't load data if no student email is selected
+    if (!selectedStudentEmail) {
+        return;
+    }
+
     try {
-        const emailParam = selectedStudentEmail ? `?email=${encodeURIComponent(selectedStudentEmail)}` : '';
+        const emailParam = `?email=${encodeURIComponent(selectedStudentEmail)}`;
 
         // Fetch stats
         const [emailsRes, appsRes] = await Promise.all([
@@ -329,10 +334,17 @@ function displayParsingResult(result, email) {
 // Load Applications
 async function loadApplications() {
     const container = document.getElementById('applicationsList');
+
+    // Don't load data if no student email is selected
+    if (!selectedStudentEmail) {
+        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">👋</div><div class="empty-state-title">Enter a student email to begin</div><div class="empty-state-description">Load student data to see their applications</div></div>';
+        return;
+    }
+
     container.innerHTML = '<div class="loading">Loading applications...</div>';
 
     try {
-        const emailParam = selectedStudentEmail ? `?email=${encodeURIComponent(selectedStudentEmail)}` : '';
+        const emailParam = `?email=${encodeURIComponent(selectedStudentEmail)}`;
         const response = await fetch(`${API_BASE}/applications${emailParam}`);
         const data = await response.json();
 

@@ -26,7 +26,6 @@
         <!-- Navigation -->
         <nav class="nav-tabs">
             <button class="nav-tab active" data-tab="dashboard">Dashboard</button>
-            <button class="nav-tab" data-tab="email-parser">Email Parser Demo</button>
             <button class="nav-tab" data-tab="applications">Applications</button>
         </nav>
 
@@ -80,7 +79,11 @@
                     <button class="btn-primary" onclick="refreshData()">🔄 Refresh</button>
                 </div>
                 <div id="recentActivity" class="activity-list">
-                    <div class="loading">Loading activity...</div>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">👋</div>
+                        <div class="empty-state-title">Enter a student email to begin</div>
+                        <div class="empty-state-description">Load student data to see their activity</div>
+                    </div>
                 </div>
             </div>
         </div>
