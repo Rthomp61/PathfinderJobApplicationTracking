@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pathfinder Email Parser - Live Demo</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Student Email Selector -->
+        <div class="student-selector">
+            <div class="selector-content">
+                <label for="studentEmail">Enter Pursuit Student Email:</label>
+                <input
+                    type="email"
+                    id="studentEmail"
+                    placeholder="student@pursuit.org"
+                    value=""
+                />
+                <button class="btn-primary" onclick="loadStudentData()">Load Student Data</button>
+                <span id="studentInfo" class="student-info"></span>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-tab="dashboard">Dashboard</button>
+            <button class="nav-tab" data-tab="email-parser">Email Parser Demo</button>
+            <button class="nav-tab" data-tab="applications">Applications</button>
+        </nav>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <h1 class="page-title">Welcome to Pathfinder Email Parser</h1>
+
+            <!-- Stats Overview -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📧</div>
+                    <div class="stat-content">
+                        <h3>Emails Synced</h3>
+                        <div class="stat-number" id="totalEmails">0</div>
+                        <p class="stat-subtitle">Total emails processed</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">✨</div>
+                    <div class="stat-content">
+                        <h3>AI Parsed</h3>
+                        <div class="stat-number" id="parsedEmails">0</div>
+                        <p class="stat-subtitle">Successfully analyzed</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📝</div>
+                    <div class="stat-content">
+                        <h3>Applications</h3>
+                        <div class="stat-number" id="totalApplications">0</div>
+                        <p class="stat-subtitle">Jobs tracked</p>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">⚡</div>
+                    <div class="stat-content">
+                        <h3>Success Rate</h3>
+                        <div class="stat-number" id="successRate">0%</div>
+                        <p class="stat-subtitle">Parsing accuracy</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h2>Recent Activity</h2>
+                    <button class="btn-primary" onclick="refreshData()">🔄 Refresh</button>
+                </div>
+                <div id="recentActivity" class="activity-list">
+                    <div class="loading">Loading activity...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Parser Demo Tab -->
+        <div id="email-parser" class="tab-content">
+            <h1 class="page-title">Email Parser Demo</h1>
+
+            <div class="demo-section">
+                <div class="section-card">
+                    <h2>Parse Email in Real-Time</h2>
+                    <p class="section-subtitle">Watch the AI analyze job application emails</p>
+
+                    <div class="parser-controls">
+                        <button class="btn-primary btn-large" onclick="syncEmails()">
+                            📥 Sync Gmail Emails
+                        </button>
+                        <button class="btn-secondary btn-large" onclick="parseNextEmail()">
+                            ✨ Parse Next Email
+                        </button>
+                        <button class="btn-secondary" onclick="parseAllEmails()">
+                            ⚡ Parse All Unprocessed
+                        </button>
+                    </div>
+
+                    <div id="parserStatus" class="status-box"></div>
+                </div>
+
+                <!-- Live Parsing Visualization -->
+                <div class="section-card">
+                    <h3>Live Parsing Results</h3>
+                    <div id="parsingResults" class="parsing-results"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Applications Tab -->
+        <div id="applications" class="tab-content">
+            <h1 class="page-title">Job Applications</h1>
+
+            <div class="section-card">
+                <div class="section-header">
+                    <h2>All Applications</h2>
+                    <div class="filter-controls">
+                        <select id="statusFilter" onchange="filterApplications()">
+                            <option value="all">All Status</option>
+                            <option value="applied">Applied</option>
+                            <option value="interviewing">Interviewing</option>
+                            <option value="offer">Offer</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="applicationsList" class="applications-grid">
+                    <div class="loading">Loading applications...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

@@ -8,6 +8,7 @@ import { startEmailSyncCron } from './services/CronService.js';
 import authRoutes from './routes/auth.js';
 import applicationRoutes from './routes/applications.js';
 import emailRoutes from './routes/email.js';
+import demoRoutes from './routes/demo.js';
 
 dotenv.config();
 
@@ -16,7 +17,11 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: [
+    process.env.FRONTEND_URL || 'http://localhost:5173',
+    'http://localhost:3002',
+    'http://localhost:8080'
+  ],
   credentials: true
 }));
 
@@ -28,6 +33,9 @@ app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
+
+// Serve demo app static files
+app.use('/demo', express.static('demo-app'));
 
 // Health check endpoint
 app.get('/health', async (req, res) => {
@@ -48,6 +56,10 @@ app.get('/health', async (req, res) => {
     });
   }
 });
+
+// Demo routes (no authentication - for presentation only)
+// MUST come before authenticated routes to avoid conflicts
+app.use('/api', demoRoutes);
 
 // API Routes
 app.use('/api/auth', authRoutes);
