@@ -39,12 +39,69 @@ export const processEmail = async (email) => {
       };
     }
 
+    // Check for pending "intent_to_apply" applications (from bookmarklet)
+    const pendingCheck = await query(
+      `SELECT * FROM applications
+       WHERE user_id = $1
+       AND company_name ILIKE $2
+       AND position_title ILIKE $3
+       AND status = 'intent_to_apply'
+       AND created_at > NOW() - INTERVAL '7 days'
+       ORDER BY created_at DESC
+       LIMIT 1`,
+      [email.user_id, `%${parsedData.company_name}%`, `%${parsedData.position_title}%`]
+    );
+
+    if (pendingCheck.rows.length > 0) {
+      // Found matching pending application! Update it instead of creating new
+      const pendingApp = pendingCheck.rows[0];
+      console.log(`📌 Found matching bookmarked job #${pendingApp.id}, updating to "applied" status`);
+
+      const result = await query(
+        `UPDATE applications
+         SET status = 'applied',
+             applied_date = $1,
+             email_message_id = $2,
+             confidence_score = $3,
+             platform = COALESCE(platform, $4),
+             salary_range = COALESCE(salary_range, $5),
+             location = COALESCE(location, $6),
+             job_type = COALESCE(job_type, $7),
+             updated_at = NOW()
+         WHERE id = $8
+         RETURNING *`,
+        [
+          parsedData.applied_date || email.received_date,
+          email.message_id,
+          parsedData.confidence_score,
+          parsedData.platform,
+          parsedData.salary_range,
+          parsedData.location,
+          parsedData.job_type,
+          pendingApp.id
+        ]
+      );
+
+      const application = result.rows[0];
+      console.log(`✅ Updated bookmarked application #${application.id}: ${parsedData.company_name} - ${parsedData.position_title}`);
+
+      await markEmailAsProcessed(email.id, application.id, null);
+
+      return {
+        success: true,
+        duplicate: false,
+        matched_bookmarked: true,
+        application
+      };
+    }
+
     // Check for duplicate applications (same company + position for this user)
     const duplicateCheck = await query(
       `SELECT id FROM applications
        WHERE user_id = $1
        AND LOWER(company_name) = LOWER($2)
        AND LOWER(position_title) = LOWER($3)
+       AND status != 'intent_to_apply'
        LIMIT 1`,
       [email.user_id, parsedData.company_name, parsedData.position_title]
     );
@@ -59,7 +116,7 @@ export const processEmail = async (email) => {
       };
     }
 
-    // Create new application
+    // Create new application from email only (user didn't use bookmarklet)
     const result = await query(
       `INSERT INTO applications (
         user_id, company_name, position_title, job_url, platform,

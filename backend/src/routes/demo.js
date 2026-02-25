@@ -247,4 +247,70 @@ router.get('/applications', async (req, res) => {
   }
 });
 
+// Capture job from bookmarklet/extension
+router.post('/capture-job', async (req, res) => {
+  try {
+    const { user_email, job_url, company_name, position_title, job_description, location, salary_range } = req.body;
+
+    // Validate required fields
+    if (!user_email || !job_url || !company_name || !position_title) {
+      return res.status(400).json({
+        error: 'Missing required fields: user_email, job_url, company_name, position_title'
+      });
+    }
+
+    // Get user ID from email
+    const userId = await getUserIdFromEmail(user_email);
+    if (!userId) {
+      return res.status(404).json({ error: 'User email not found' });
+    }
+
+    // Check if this job was already captured recently (prevent duplicates)
+    const existingApp = await query(
+      `SELECT id FROM applications
+       WHERE user_id = $1
+       AND company_name ILIKE $2
+       AND position_title ILIKE $3
+       AND created_at > NOW() - INTERVAL '24 hours'
+       LIMIT 1`,
+      [userId, company_name, position_title]
+    );
+
+    if (existingApp.rows.length > 0) {
+      return res.json({
+        message: 'Job already captured',
+        applicationId: existingApp.rows[0].id,
+        status: 'duplicate'
+      });
+    }
+
+    // Create new application with "intent_to_apply" status
+    const result = await query(
+      `INSERT INTO applications (
+        user_id,
+        company_name,
+        position_title,
+        job_url,
+        job_description,
+        location,
+        salary_range,
+        status,
+        source,
+        created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, 'intent_to_apply', 'bookmarklet', NOW())
+      RETURNING id`,
+      [userId, company_name, position_title, job_url, job_description, location, salary_range]
+    );
+
+    res.json({
+      message: 'Job captured successfully',
+      applicationId: result.rows[0].id,
+      status: 'success'
+    });
+  } catch (error) {
+    console.error('Capture job error:', error);
+    res.status(500).json({ error: 'Failed to capture job' });
+  }
+});
+
 export default router;

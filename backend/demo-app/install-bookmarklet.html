@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Install Pathfinder Job Tracker</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .install-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .install-hero {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .install-hero h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .install-hero p {
+            font-size: 18px;
+            color: #666;
+        }
+
+        .install-steps {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .step {
+            margin-bottom: 40px;
+        }
+
+        .step h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: #3b82f6;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 32px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .bookmarklet-button {
+            display: inline-block;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: move;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            transition: transform 0.2px;
+        }
+
+        .bookmarklet-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        .drag-instruction {
+            display: inline-block;
+            margin-left: 15px;
+            padding: 8px 16px;
+            background: #fef3c7;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #92400e;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #10b981;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .demo-gif {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 8px;
+            border: 2px solid #e5e7eb;
+            margin: 20px 0;
+        }
+
+        .keyboard-shortcut {
+            display: inline-block;
+            background: #f3f4f6;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            border: 1px solid #d1d5db;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            border: 2px solid #10b981;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="install-container">
+        <div class="install-hero">
+            <h1>📌 Install Pathfinder Job Tracker</h1>
+            <p>Automatically track jobs you apply to - capture job details before applying!</p>
+        </div>
+
+        <div class="install-steps">
+            <div class="step">
+                <h2><span class="step-number">1</span>Show Your Bookmarks Bar</h2>
+                <p>First, make sure your browser's bookmarks bar is visible:</p>
+                <ul>
+                    <li><strong>Windows/Linux:</strong> Press <span class="keyboard-shortcut">Ctrl + Shift + B</span></li>
+                    <li><strong>Mac:</strong> Press <span class="keyboard-shortcut">Cmd + Shift + B</span></li>
+                </ul>
+                <p style="margin-top: 10px; color: #666;">The bookmarks bar should appear at the top of your browser, just below the address bar.</p>
+            </div>
+
+            <div class="step">
+                <h2><span class="step-number">2</span>Drag This Button to Your Bookmarks Bar</h2>
+                <p style="margin-bottom: 20px;">Click and drag the blue button below UP to your bookmarks bar:</p>
+
+                <div style="text-align: center;">
+                    <a href="javascript:(function(){const e=prompt('Enter your email (e.g., you@pursuit.org):');if(!e||!e.includes('@'))return alert('Please enter a valid email');const t=window.location.href,o=document.title;let n,r,a,l;try{n=document.querySelector('h1')?.innerText||document.querySelector('.job-title')?.innerText||document.querySelector('[class*=job-title]')?.innerText||'Position not found',r=document.querySelector('[class*=company]')?.innerText||document.querySelector('.company-name')?.innerText||'Company not found',a=document.querySelector('.job-description')?.innerText||document.querySelector('[class*=description]')?.innerText||'',l=document.querySelector('[class*=location]')?.innerText||document.querySelector('.location')?.innerText||''}catch(e){console.error('Error extracting job info:',e)}const i={user_email:e,job_url:t,company_name:r,position_title:n,job_description:a.substring(0,1e3),location:l,captured_at:new Date().toISOString()};fetch('http://localhost:3001/api/capture-job',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(i)}).then(e=>e.json()).then(e=>{e.success||'duplicate'===e.status?alert('✅ Job saved to Pathfinder!\n\nYou can now apply for this job.\nThe application will be automatically tracked when the confirmation email arrives.'):alert('❌ Error saving job. Please try again.')}).catch(()=>{alert('❌ Connection error. Make sure Pathfinder backend is running.')})})();"
+                       class="bookmarklet-button"
+                       onclick="event.preventDefault(); alert('⚠️ Don\'t click! Drag this button to your bookmarks bar instead.');">
+                        📌 Save to Pathfinder
+                    </a>
+                    <span class="drag-instruction">👆 Drag me!</span>
+                </div>
+
+                <p style="margin-top: 20px; color: #666; font-size: 14px;">
+                    <strong>Important:</strong> DON'T click the button! Instead, click and hold, then drag it up to your bookmarks bar.
+                </p>
+            </div>
+
+            <div class="step">
+                <h2><span class="step-number">3</span>Use It When Job Hunting</h2>
+                <p>When you find a job you want to apply for:</p>
+                <ul class="feature-list">
+                    <li>Navigate to the job posting page (LinkedIn, Indeed, company site, etc.)</li>
+                    <li>Click the "📌 Save to Pathfinder" bookmark in your bookmarks bar</li>
+                    <li>Enter your email when prompted</li>
+                    <li>The job details will be saved automatically</li>
+                    <li>Continue applying normally on the website</li>
+                    <li>When the confirmation email arrives, it'll match with your saved job!</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="success-message" id="successMessage">
+            <h3>🎉 Bookmarklet Installed Successfully!</h3>
+            <p>You're all set! Find a job posting and try clicking the bookmark.</p>
+        </div>
+
+        <div class="install-steps">
+            <h2>✨ What This Does</h2>
+            <ul class="feature-list">
+                <li><strong>Captures exact job URL</strong> - Direct link to the job posting</li>
+                <li><strong>Extracts job details</strong> - Company, position, description, location</li>
+                <li><strong>Saves before you apply</strong> - Tracks your intent to apply</li>
+                <li><strong>Auto-matches emails</strong> - Links confirmation emails to saved jobs</li>
+                <li><strong>Complete tracking</strong> - Full job details + email confirmation</li>
+            </ul>
+        </div>
+
+        <div class="install-steps">
+            <h2>🔒 Privacy & Security</h2>
+            <p>The bookmarklet:</p>
+            <ul class="feature-list">
+                <li>Only runs when you click it</li>
+                <li>Only sends data to your Pathfinder backend</li>
+                <li>Doesn't track your browsing</li>
+                <li>Doesn't access any personal data</li>
+                <li>Is completely open source</li>
+            </ul>
+        </div>
+
+        <div class="install-steps" style="text-align: center;">
+            <h2>Need Help?</h2>
+            <p>If you have any issues installing or using the bookmarklet, please contact support.</p>
+            <a href="index.html" class="btn-primary" style="display: inline-block; margin-top: 20px;">
+                ← Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Check if bookmarklet was successfully added by testing localStorage
+        if (localStorage.getItem('bookmarkletInstalled')) {
+            document.getElementById('successMessage').classList.add('show');
+        }
+
+        // Show success message when user drags the bookmarklet
+        document.querySelector('.bookmarklet-button').addEventListener('dragstart', () => {
+            setTimeout(() => {
+                localStorage.setItem('bookmarkletInstalled', 'true');
+                document.getElementById('successMessage').classList.add('show');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
